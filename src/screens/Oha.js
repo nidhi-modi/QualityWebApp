@@ -183,9 +183,6 @@ class Oha extends React.Component {
 
     }
 
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
     handleDeleteClick(deleteNames, names) {
 
@@ -209,8 +206,6 @@ class Oha extends React.Component {
                                 fetch(url, { mode: 'no-cors' }).then(
                                     () => {
 
-
-                                        this.sleep(2000);
 
                                         this.getDataFromGoogleSheet()
 
