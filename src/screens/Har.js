@@ -1,5 +1,5 @@
 import React from "react";
-import '../styles/Ger.css';
+import '../styles/Har.css';
 import { Container, Grid, Header, List, Table } from "semantic-ui-react";
 import logo from '../image/delete.png';
 import { confirmAlert } from 'react-confirm-alert'; // Import
@@ -220,7 +220,7 @@ class Har extends React.Component {
                         </button>
                     </div>
                 );
-            },closeOnClickOutside: false
+            }, closeOnClickOutside: false
 
             /*title: 'Confirm to delete',
             message: 'Are you sure you want to delete ' + names + ' from the list.',
