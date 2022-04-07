@@ -173,10 +173,10 @@ class Rep extends React.Component {
     }
 
 
-    getJobDetails(valueName, valueJob, valueTL, event) {
+    getJobDetails(valueName, valueJob, valueTL, event, deletingLookup) {
 
         const combinedJobValue = event.target.value;
-        this.sendData(valueName, valueJob, valueTL, combinedJobValue);
+        this.sendData(valueName, valueJob, valueTL, combinedJobValue, deletingLookup);
 
     }
 
@@ -266,7 +266,7 @@ class Rep extends React.Component {
 
 
 
-    sendData(valueName, valueJob, valueTL, combinedValue) {
+    sendData(valueName, valueJob, valueTL, combinedValue, lookupValue) {
 
         console.log("NAME LIST: " + combinedValue);
 
@@ -274,7 +274,7 @@ class Rep extends React.Component {
 
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec';
         const url = `${scriptUrl}?
-        callback=ctrlq&action=${'doPostAssignJobsRepData'}&assign_jobs_name=${valueName}&assign_jobs_job=${valueJob}&assign_jobs_TL=${valueTL}&assign_jobs=${combinedValue}`;
+        callback=ctrlq&action=${'doPostAssignJobsRepData'}&assign_jobs_name=${valueName}&assign_jobs_job=${valueJob}&assign_jobs_TL=${valueTL}&assign_jobs=${combinedValue}&lookup_value=${lookupValue}`;
 
         console.log("URL : " + url);
         fetch(url, { mode: 'no-cors' }).then(
@@ -530,15 +530,15 @@ class Rep extends React.Component {
                                                 <Table.Row key={el.Name}>
                                                     <Table.Cell className="align-space">{el.Name}</Table.Cell>
                                                     <Table.Cell className="align-space">{el.Adi}</Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Clipping" name={el.Name + " " + clipping + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + clipping + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, clipping, this.state.otherTLName, e)} value={el.Name + " " + clipping + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Twisting" name={el.Name + " " + twisting + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + twisting + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, twisting, this.state.otherTLName, e)} value={el.Name + " " + twisting + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Pruning" name={el.Name + " " + pruning + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + pruning + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, pruning, this.state.otherTLName, e)} value={el.Name + " " + pruning + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Dropping" name={el.Name + " " + dropping + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + dropping + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, dropping, this.state.otherTLName, e)} value={el.Name + " " + dropping + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Deleafing" name={el.Name + " " + deleafing + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + deleafing + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, deleafing, this.state.otherTLName, e)} value={el.Name + " " + deleafing + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Picking" name={el.Name + " " + picking + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + picking + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, picking, this.state.otherTLName, e)} value={el.Name + " " + picking + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input type="checkbox" id="Arching" className="largerCheckbox" name={el.Name + " " + arching + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + arching + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, arching, this.state.otherTLName, e)} value={el.Name + " " + arching + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input type="checkbox" id="TrussPicking" className="largerCheckbox" name={el.Name + " " + trussPicking + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + trussPicking + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, trussPicking, this.state.otherTLName, e)} value={el.Name + " " + trussPicking + " " + this.state.otherTLName} /></Table.Cell>
-                                                    <Table.Cell className="align-space"> <input type="checkbox" id="ClipPrune" className="largerCheckbox" name={el.Name + " " + clipPrune + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + clipPrune + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, clipPrune, this.state.otherTLName, e)} value={el.Name + " " + clipPrune + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Clipping" name={el.Name + " " + clipping + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + clipping + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, clipping, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + clipping + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Twisting" name={el.Name + " " + twisting + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + twisting + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, twisting, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + twisting + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Pruning" name={el.Name + " " + pruning + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + pruning + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, pruning, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + pruning + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Dropping" name={el.Name + " " + dropping + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + dropping + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, dropping, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + dropping + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Deleafing" name={el.Name + " " + deleafing + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + deleafing + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, deleafing, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + deleafing + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input className="largerCheckbox" type="checkbox" id="Picking" name={el.Name + " " + picking + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + picking + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, picking, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + picking + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input type="checkbox" id="Arching" className="largerCheckbox" name={el.Name + " " + arching + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + arching + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, arching, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + arching + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input type="checkbox" id="TrussPicking" className="largerCheckbox" name={el.Name + " " + trussPicking + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + trussPicking + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, trussPicking, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + trussPicking + " " + this.state.otherTLName} /></Table.Cell>
+                                                    <Table.Cell className="align-space"> <input type="checkbox" id="ClipPrune" className="largerCheckbox" name={el.Name + " " + clipPrune + " " + this.state.otherTLName} defaultChecked={this.userExists(el.Name + " " + clipPrune + " " + this.state.otherTLName)} onChange={(e) => this.getJobDetails(el.Name, clipPrune, this.state.otherTLName, e, el.Name + " "+ this.state.otherTLName)} value={el.Name + " " + clipPrune + " " + this.state.otherTLName} /></Table.Cell>
                                                     <Table.Cell className="align-space-top" onClick={() => this.handleDeleteClick(el.Name + " " + this.state.otherTLName, el.Name)} value={el.Name + " " + this.state.otherTLName}> <img src={logo} /> </Table.Cell>
 
                                                 </Table.Row>
