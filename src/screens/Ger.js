@@ -37,6 +37,8 @@ class Ger extends React.Component {
       assignJobs: "",
       jobList: [],
       loading: false,
+      value: "",
+      filteredData: [],
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -300,6 +302,24 @@ class Ger extends React.Component {
     return str.toLowerCase().replace(/\b(\w)/g, (s) => s.toUpperCase());
   }
 
+  handleChange = (e) => {
+    this.setState({
+      value: e.target.value,
+    });
+
+    const searchQuery = e.target.value.toLowerCase();
+
+    const filteredCountries = this.state.TL1.filter((item) => {
+      const searchValue = item.Name.toLowerCase();
+
+      return searchValue.indexOf(searchQuery) > -1;
+    });
+
+    this.setState({
+      filteredData: filteredCountries,
+    });
+  };
+
   sendDataToGoogleSheet = () => {
     var that = this;
 
@@ -338,6 +358,10 @@ class Ger extends React.Component {
   };
 
   render() {
+    const dataToDisplay = this.state.filteredData.length
+      ? this.state.filteredData
+      : this.state.TL1;
+
     if (this.state.loading) {
       return (
         <div className="Ger">
@@ -429,6 +453,15 @@ class Ger extends React.Component {
           {this.state.TL1.length > 0 ? (
             <form onSubmit={this.handleAsignJobsButton}>
               <div className="align-center">
+                <input
+                  className="text-input"
+                  icon="search"
+                  value={this.state.value}
+                  placeholder="SEARCH BY NAME..."
+                  onChange={this.handleChange}
+                />
+
+                <br />
                 <Table singleLine>
                   <Table.Header>
                     <Table.Row>
@@ -468,7 +501,7 @@ class Ger extends React.Component {
                   <br />
 
                   <Table.Body>
-                    {this.state.TL1.map((el) => {
+                    {dataToDisplay.map((el) => {
                       return (
                         <Table.Row key={el.Name}>
                           <Table.Cell className="align-space">

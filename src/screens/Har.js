@@ -1,7 +1,8 @@
 import React from "react";
 import "../styles/Har.css";
-import { Container, Grid, Header, List, Table } from "semantic-ui-react";
+import { Container, Grid, Header, Input, Table } from "semantic-ui-react";
 import logo from "../image/delete.png";
+import searchLogo from "../image/search.png";
 import { confirmAlert } from "react-confirm-alert"; // Import
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { toast } from "react-toastify";
@@ -37,6 +38,8 @@ class Har extends React.Component {
       assignJobs: "",
       jobList: [],
       loading: false,
+      value: "",
+      filteredData: [],
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -249,8 +252,6 @@ class Har extends React.Component {
 
   userExists(name) {
     if (response.length != 0) {
-      console.log("Data Available");
-
       /*response.items.map(function (item) {
               if (item.JobList.includes(name)) {
                 console.log(name+ " Yes");
@@ -297,6 +298,24 @@ class Har extends React.Component {
     return str.toLowerCase().replace(/\b(\w)/g, (s) => s.toUpperCase());
   }
 
+  handleChange = (e) => {
+    this.setState({
+      value: e.target.value,
+    });
+
+    const searchQuery = e.target.value.toLowerCase();
+
+    const filteredCountries = this.state.TL1.filter((item) => {
+      const searchValue = item.Name.toLowerCase();
+
+      return searchValue.indexOf(searchQuery) > -1;
+    });
+
+    this.setState({
+      filteredData: filteredCountries,
+    });
+  };
+
   sendDataToGoogleSheet = () => {
     var that = this;
 
@@ -335,6 +354,10 @@ class Har extends React.Component {
   };
 
   render() {
+    const dataToDisplay = this.state.filteredData.length
+      ? this.state.filteredData
+      : this.state.TL1;
+
     if (this.state.loading) {
       return (
         <div className="Har">
@@ -428,6 +451,16 @@ class Har extends React.Component {
           {this.state.TL1.length > 0 ? (
             <form onSubmit={this.handleAsignJobsButton}>
               <div className="align-center">
+                <input
+                  className="text-input"
+                  icon="search"
+                  value={this.state.value}
+                  placeholder="SEARCH BY NAME..."
+                  onChange={this.handleChange}
+                />
+
+                <br />
+
                 <Table singleLine>
                   <Table.Header>
                     <Table.Row>
@@ -470,7 +503,7 @@ class Har extends React.Component {
                   <br />
 
                   <Table.Body>
-                    {this.state.TL1.map((el) => {
+                    {dataToDisplay.map((el) => {
                       return (
                         <Table.Row key={el.Name}>
                           <Table.Cell className="align-space">
