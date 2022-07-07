@@ -413,6 +413,7 @@ class Rep extends React.Component {
                   SELECT
                 </option>
                 <option value="Chris Cowie">Chris Cowie</option>
+                <option value="Colin Williams">Colin Williams</option>
                 <option value="Desiree Lloydd">Desiree Lloydd</option>
                 <option value="Judy Karekare">Judy Karekare</option>
                 <option value="Emaleene Toko">Emaleene Toko</option>
@@ -440,6 +441,7 @@ class Rep extends React.Component {
               SELECT
             </option>
             <option value="Chris Cowie">Chris Cowie</option>
+            <option value="Colin Williams">Colin Williams</option>
             <option value="Desiree Lloydd">Desiree Lloydd</option>
             <option value="Judy Karekare">Judy Karekare</option>
             <option value="Emaleene Toko">Emaleene Toko</option>
