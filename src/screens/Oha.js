@@ -16,6 +16,7 @@ var dropping = "Dropping";
 var deleafing = "Deleafing";
 var picking = "Picking";
 var pruneArch = "Prune and Arch";
+var arching = "Arching";
 
 var checkedBox;
 
@@ -449,17 +450,18 @@ class Oha extends React.Component {
           <h3 className="text_header_style2">{this.state.otherTLName}</h3>
 
           {this.state.TL1.length > 0 ? (
+            <input
+              className="text-input"
+              icon="search"
+              value={this.state.value}
+              placeholder="SEARCH BY NAME..."
+              onChange={this.handleChange}
+            />
+          ) : null}
+
+          {this.state.TL1.length > 0 ? (
             <form onSubmit={this.handleAsignJobsButton}>
               <div className="align-center">
-                <input
-                  className="text-input"
-                  icon="search"
-                  value={this.state.value}
-                  placeholder="SEARCH BY NAME..."
-                  onChange={this.handleChange}
-                />
-
-                <br />
                 <Table singleLine>
                   <Table.Header>
                     <Table.Row>
@@ -489,6 +491,9 @@ class Oha extends React.Component {
                       </Table.HeaderCell>
                       <Table.HeaderCell className="align-space">
                         PRUNE &#38; ARCH
+                      </Table.HeaderCell>
+                      <Table.HeaderCell className="align-space">
+                        ARCHING
                       </Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
@@ -766,6 +771,44 @@ class Oha extends React.Component {
                                 el.Name +
                                 " " +
                                 pruneArch +
+                                " " +
+                                this.state.otherTLName
+                              }
+                            />
+                          </Table.Cell>
+                          <Table.Cell className="align-space">
+                            {" "}
+                            <input
+                              type="checkbox"
+                              id="Arching"
+                              className="largerCheckbox"
+                              name={
+                                el.Name +
+                                " " +
+                                arching +
+                                " " +
+                                this.state.otherTLName
+                              }
+                              defaultChecked={this.userExists(
+                                el.Name +
+                                  " " +
+                                  arching +
+                                  " " +
+                                  this.state.otherTLName
+                              )}
+                              onChange={(e) =>
+                                this.getJobDetails(
+                                  el.Name,
+                                  arching,
+                                  this.state.otherTLName,
+                                  e,
+                                  el.Name + " " + this.state.otherTLName
+                                )
+                              }
+                              value={
+                                el.Name +
+                                " " +
+                                arching +
                                 " " +
                                 this.state.otherTLName
                               }

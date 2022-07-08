@@ -451,17 +451,18 @@ class Ger extends React.Component {
           <h3 className="text_header_style2">{this.state.otherTLName}</h3>
 
           {this.state.TL1.length > 0 ? (
+            <input
+              className="text-input"
+              icon="search"
+              value={this.state.value}
+              placeholder="SEARCH BY NAME..."
+              onChange={this.handleChange}
+            />
+          ) : null}
+
+          {this.state.TL1.length > 0 ? (
             <form onSubmit={this.handleAsignJobsButton}>
               <div className="align-center">
-                <input
-                  className="text-input"
-                  icon="search"
-                  value={this.state.value}
-                  placeholder="SEARCH BY NAME..."
-                  onChange={this.handleChange}
-                />
-
-                <br />
                 <Table singleLine>
                   <Table.Header>
                     <Table.Row>
