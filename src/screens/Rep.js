@@ -412,11 +412,7 @@ class Rep extends React.Component {
                 <option value="none" selected="selected">
                   SELECT
                 </option>
-                <option value="Chris Cowie">Chris Cowie</option>
-                <option value="Colin Williams">Colin Williams</option>
-                <option value="Desiree Lloydd">Desiree Lloydd</option>
-                <option value="Judy Karekare">Judy Karekare</option>
-                <option value="Emaleene Toko">Emaleene Toko</option>
+                <option value="REP Teams">REP Teams</option>
               </select>
             </label>
 
@@ -440,11 +436,7 @@ class Rep extends React.Component {
             <option value="none" selected="selected">
               SELECT
             </option>
-            <option value="Chris Cowie">Chris Cowie</option>
-            <option value="Colin Williams">Colin Williams</option>
-            <option value="Desiree Lloydd">Desiree Lloydd</option>
-            <option value="Judy Karekare">Judy Karekare</option>
-            <option value="Emaleene Toko">Emaleene Toko</option>
+            <option value="REP Teams">REP Teams</option>
           </select>
 
           <br />
