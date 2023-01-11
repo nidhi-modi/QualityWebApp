@@ -18,6 +18,7 @@ var picking = "Picking";
 var arching = "Arching";
 var trussPicking = "Truss Picking";
 var clipPrune = "Clip And Prune";
+var density = "Density";
 
 var checkedBox;
 
@@ -492,6 +493,9 @@ class Rep extends React.Component {
                       <Table.HeaderCell className="align-space">
                         CLIP &#38; PRUNE
                       </Table.HeaderCell>
+                      <Table.HeaderCell className="align-space">
+                        DENSITY
+                      </Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
 
@@ -844,6 +848,44 @@ class Rep extends React.Component {
                                 el.Name +
                                 " " +
                                 clipPrune +
+                                " " +
+                                this.state.otherTLName
+                              }
+                            />
+                          </Table.Cell>
+                          <Table.Cell className="align-space">
+                            {" "}
+                            <input
+                              type="checkbox"
+                              id="Density"
+                              className="largerCheckbox"
+                              name={
+                                el.Name +
+                                " " +
+                                density +
+                                " " +
+                                this.state.otherTLName
+                              }
+                              defaultChecked={this.userExists(
+                                el.Name +
+                                  " " +
+                                  density +
+                                  " " +
+                                  this.state.otherTLName
+                              )}
+                              onChange={(e) =>
+                                this.getJobDetails(
+                                  el.Name,
+                                  density,
+                                  this.state.otherTLName,
+                                  e,
+                                  el.Name + " " + this.state.otherTLName
+                                )
+                              }
+                              value={
+                                el.Name +
+                                " " +
+                                density +
                                 " " +
                                 this.state.otherTLName
                               }

@@ -19,6 +19,8 @@ var picking = "Picking";
 var clipPrune = "Clip And Prune";
 var arching = "Arching";
 var trussCutting = "Truss Cutting";
+var density = "Density";
+
 var checkedBox;
 
 var response = [];
@@ -410,7 +412,6 @@ class Har extends React.Component {
                   SELECT
                 </option>
                 <option value="Taufa Filiai">Taufa Filiai</option>
-                <option value="Gaurav Bhalla">Gaurav Bhalla</option>
                 <option value="Fusi Pai Tonga">Fusi Pai Tonga</option>
                 <option value="Florence Pearson">Florence Pearson</option>
                 <option value="Aroha Majoor">Aroha Majoor</option>
@@ -439,7 +440,6 @@ class Har extends React.Component {
               SELECT
             </option>
             <option value="Taufa Filiai">Taufa Filiai</option>
-            <option value="Gaurav Bhalla">Gaurav Bhalla</option>
             <option value="Fusi Pai Tonga">Fusi Pai Tonga</option>
             <option value="Florence Pearson">Florence Pearson</option>
             <option value="Aroha Majoor">Aroha Majoor</option>
@@ -498,6 +498,9 @@ class Har extends React.Component {
                       </Table.HeaderCell>
                       <Table.HeaderCell className="align-space">
                         TRUSS CUTTING
+                      </Table.HeaderCell>
+                      <Table.HeaderCell className="align-space">
+                        DENSITY
                       </Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
@@ -851,6 +854,44 @@ class Har extends React.Component {
                                 el.Name +
                                 " " +
                                 trussCutting +
+                                " " +
+                                this.state.otherTLName
+                              }
+                            />
+                          </Table.Cell>
+                          <Table.Cell className="align-space">
+                            {" "}
+                            <input
+                              type="checkbox"
+                              id="Density"
+                              className="largerCheckbox"
+                              name={
+                                el.Name +
+                                " " +
+                                density +
+                                " " +
+                                this.state.otherTLName
+                              }
+                              defaultChecked={this.userExists(
+                                el.Name +
+                                  " " +
+                                  density +
+                                  " " +
+                                  this.state.otherTLName
+                              )}
+                              onChange={(e) =>
+                                this.getJobDetails(
+                                  el.Name,
+                                  density,
+                                  this.state.otherTLName,
+                                  e,
+                                  el.Name + " " + this.state.otherTLName
+                                )
+                              }
+                              value={
+                                el.Name +
+                                " " +
+                                density +
                                 " " +
                                 this.state.otherTLName
                               }
