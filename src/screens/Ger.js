@@ -15,7 +15,7 @@ var pruning = "Pruning";
 var dropping = "Dropping";
 var deleafing = "Deleafing";
 var picking = "Picking";
-var pruneArch = "Prune and Arch";
+var pruneArch = "Prune And Arch";
 var trussCutting = "Truss Cutting";
 var density = "Density";
 
