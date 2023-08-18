@@ -415,7 +415,7 @@ class Har extends React.Component {
                 <option value="Fusi Pai Tonga">Fusi Pai Tonga</option>
                 <option value="Florence Pearson">Florence Pearson</option>
                 <option value="Aroha Majoor">Aroha Majoor</option>
-                <option value="Lua Tafau">Lua Tafau</option>
+                <option value="Jeremy Whitten">Jeremy Whitten</option>
               </select>
             </label>
 
@@ -443,7 +443,7 @@ class Har extends React.Component {
             <option value="Fusi Pai Tonga">Fusi Pai Tonga</option>
             <option value="Florence Pearson">Florence Pearson</option>
             <option value="Aroha Majoor">Aroha Majoor</option>
-            <option value="Lua Tafau">Lua Tafau</option>
+            <option value="Jeremy Whitten">Jeremy Whitten</option>
           </select>
 
           <br />
