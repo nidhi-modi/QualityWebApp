@@ -419,6 +419,9 @@ class Ger extends React.Component {
                 <option value="Vikash Chand">Vikash Chand</option>
                 <option value="Simione Filiai">Simione Filiai</option>
                 <option value="Tevita Fetuani">Tevita Fetuani</option>
+                <option value="Brooklyn Keown Wohnsiedler">
+                  Brooklyn Keown Wohnsiedler
+                </option>
                 <option value="Sai Chandrasekar">Sai Chandrasekar</option>
               </select>
             </label>
@@ -448,6 +451,9 @@ class Ger extends React.Component {
             <option value="Vikash Chand">Vikash Chand</option>
             <option value="Simione Filiai">Simione Filiai</option>
             <option value="Tevita Fetuani">Tevita Fetuani</option>
+            <option value="Brooklyn Keown Wohnsiedler">
+              Brooklyn Keown Wohnsiedler
+            </option>
             <option value="Sai Chandrasekar">Sai Chandrasekar</option>
           </select>
 
