@@ -18,6 +18,7 @@ var deleafing = "Deleafing";
 var picking = "Picking";
 var clipPrune = "Clip And Prune";
 var arching = "Arching";
+var pruneArch = "Prune And Arch";
 var trussCutting = "Truss Cutting";
 var density = "Density";
 
@@ -499,6 +500,9 @@ class Har extends React.Component {
                         ARCHING
                       </Table.HeaderCell>
                       <Table.HeaderCell className="align-space">
+                        PRUNE &#38; ARCH
+                      </Table.HeaderCell>
+                      <Table.HeaderCell className="align-space">
                         TRUSS CUTTING
                       </Table.HeaderCell>
                       <Table.HeaderCell className="align-space">
@@ -818,6 +822,44 @@ class Har extends React.Component {
                                 el.Name +
                                 " " +
                                 arching +
+                                " " +
+                                this.state.otherTLName
+                              }
+                            />
+                          </Table.Cell>
+                          <Table.Cell className="align-space">
+                            {" "}
+                            <input
+                              type="checkbox"
+                              id="PruneArch"
+                              className="largerCheckbox"
+                              name={
+                                el.Name +
+                                " " +
+                                pruneArch +
+                                " " +
+                                this.state.otherTLName
+                              }
+                              defaultChecked={this.userExists(
+                                el.Name +
+                                  " " +
+                                  pruneArch +
+                                  " " +
+                                  this.state.otherTLName
+                              )}
+                              onChange={(e) =>
+                                this.getJobDetails(
+                                  el.Name,
+                                  pruneArch,
+                                  this.state.otherTLName,
+                                  e,
+                                  el.Name + " " + this.state.otherTLName
+                                )
+                              }
+                              value={
+                                el.Name +
+                                " " +
+                                pruneArch +
                                 " " +
                                 this.state.otherTLName
                               }
