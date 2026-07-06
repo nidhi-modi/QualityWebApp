@@ -40,6 +40,9 @@ class Ger extends React.Component {
       loading: false,
       value: "",
       filteredData: [],
+      leaders: [],
+      copyFromTL: "",
+      showCopyUI: false,
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -48,7 +51,40 @@ class Ger extends React.Component {
     this.getTLName = this.getTLName.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleAsignJobsButton = this.handleAsignJobsButton.bind(this);
+    this.handleCopyFromTLChange = this.handleCopyFromTLChange.bind(this);
+    this.handleCopyData = this.handleCopyData.bind(this);
   }
+
+  componentDidMount() {
+    this.getLeadersFromGoogle();
+  }
+
+  getLeadersFromGoogle = () => {
+    const scriptUrl =
+      "https://script.google.com/macros/s/AKfycbwStGsVHmBl83tHHZpzJCLWZV5lmQcNMmINRrSSvqnrq6kyglM/exec";
+    const url = `${scriptUrl}?callback=ctrlq&action=${"doGetGerAuditorsName"}`;
+
+    console.log("Fetching leaders from: " + url);
+    fetch(url)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log("Leaders received:", responseJson);
+        // Handle different response formats
+        let leadersArray = [];
+        if (Array.isArray(responseJson)) {
+          leadersArray = responseJson.map((item) => item.value || item);
+        } else if (responseJson && Array.isArray(responseJson.items)) {
+          leadersArray = responseJson.items.map((item) => item.value || item);
+        } else if (responseJson && Array.isArray(responseJson.data)) {
+          leadersArray = responseJson.data.map((item) => item.value || item);
+        }
+        this.setState({ leaders: leadersArray });
+      })
+      .catch((error) => {
+        console.log("Error fetching leaders:", error);
+        this.setState({ leaders: [] });
+      });
+  };
 
   getDataFromGoogleSheet = () => {
     this.setState({ loading: true });
@@ -71,7 +107,7 @@ class Ger extends React.Component {
             this.state.combinedData.items.filter(jobAndTeamLeader);
 
           const sortedData = filteredData.sort((a, b) =>
-            a.Name.toString().localeCompare(b.Name)
+            a.Name.toString().localeCompare(b.Name),
           );
 
           console.log("TESTING : " + filteredData);
@@ -108,7 +144,7 @@ class Ger extends React.Component {
 
           () => {
             this.afterSetStateFinished(data2);
-          }
+          },
         );
       })
       .catch((error) => {
@@ -153,7 +189,7 @@ class Ger extends React.Component {
       valueJob,
       valueTL,
       combinedJobValue,
-      deletingLookup
+      deletingLookup,
     );
   }
 
@@ -283,20 +319,65 @@ class Ger extends React.Component {
 
   handleAsignJobsButton(event) {}
 
+  handleCopyFromTLChange(event) {
+    this.setState({ copyFromTL: event.target.value });
+  }
+
+  handleCopyData = () => {
+    const { copyFromTL, otherTLName } = this.state;
+
+    if (!copyFromTL || copyFromTL === "none") {
+      toast.error("Please select a team leader to copy from.");
+      return;
+    }
+
+    if (copyFromTL === otherTLName) {
+      toast.error("Please select a different team leader.");
+      return;
+    }
+
+    // Show toast and clear dropdowns immediately
+    toast.success("Data copied successfully!");
+    this.setState({
+      copyFromTL: "",
+      otherTLName: "",
+    });
+
+    const scriptUrl =
+      "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
+    const url = `${scriptUrl}?callback=ctrlq&action=${"doCopyGerTLData"}&copy_from_tl=${copyFromTL}&copy_to_tl=${otherTLName}`;
+
+    console.log("URL : " + url);
+    fetch(url, { mode: "no-cors" })
+      .then(() => {
+        console.log("Data copied successfully");
+        // Refresh data in background
+        this.getDataFromGoogleSheetFast();
+      })
+      .catch((error) => {
+        console.log("Error copying data:", error);
+        toast.error("Error copying data. Please try again.");
+      });
+  };
+
   handleSubmit(event) {
+    event.preventDefault();
+
+    if (this.state.leaders.length === 0) {
+      toast.error("Please wait for leaders to load.");
+      return;
+    }
+
     if (
       this.state.teamLeaderName === "" ||
       this.state.teamLeaderName === "SELECT" ||
       this.state.teamLeaderName === null
     ) {
       toast.error("Please select team leader from the list.");
-
-      event.preventDefault();
-    } else {
-      event.preventDefault();
-
-      this.sendDataToGoogleSheet();
+      return;
     }
+
+    this.sendDataToGoogleSheet();
   }
 
   titleCase(str) {
@@ -410,19 +491,18 @@ class Ger extends React.Component {
                 id="name_select"
                 name="leaders"
                 onChange={this.handleTLChange}
+                value={this.state.teamLeaderName || "none"}
+                disabled={this.state.leaders.length === 0}
               >
-                <option value="none" selected="selected">
-                  SELECT
+                <option value="none">
+                  {this.state.leaders.length === 0 ? "Loading..." : "SELECT"}
                 </option>
-                <option value="Tomu Lama">Tomu Lama</option>
-                <option value="Nau Pesa">Nau Pesa</option>
-                <option value="Vikash Chand">Vikash Chand</option>
-                <option value="Simione Filiai">Simione Filiai</option>
-                <option value="Tevita Fetuani">Tevita Fetuani</option>
-                <option value="Brooklyn Keown Wohnsiedler">
-                  Brooklyn Keown Wohnsiedler
-                </option>
-                <option value="Sai Chandrasekar">Sai Chandrasekar</option>
+                {Array.isArray(this.state.leaders) &&
+                  this.state.leaders.map((leader, index) => (
+                    <option key={index} value={leader}>
+                      {leader}
+                    </option>
+                  ))}
               </select>
             </label>
 
@@ -442,19 +522,18 @@ class Ger extends React.Component {
             className="button-dropdown"
             name="leaders"
             onChange={this.getTLName}
+            value={this.state.otherTLName || "none"}
+            disabled={this.state.leaders.length === 0}
           >
-            <option value="none" selected="selected">
-              SELECT
+            <option value="none">
+              {this.state.leaders.length === 0 ? "Loading..." : "SELECT"}
             </option>
-            <option value="Tomu Lama">Tomu Lama</option>
-            <option value="Nau Pesa">Nau Pesa</option>
-            <option value="Vikash Chand">Vikash Chand</option>
-            <option value="Simione Filiai">Simione Filiai</option>
-            <option value="Tevita Fetuani">Tevita Fetuani</option>
-            <option value="Brooklyn Keown Wohnsiedler">
-              Brooklyn Keown Wohnsiedler
-            </option>
-            <option value="Sai Chandrasekar">Sai Chandrasekar</option>
+            {Array.isArray(this.state.leaders) &&
+              this.state.leaders.map((leader, index) => (
+                <option key={index} value={leader}>
+                  {leader}
+                </option>
+              ))}
           </select>
 
           <br />
@@ -543,7 +622,7 @@ class Ger extends React.Component {
                                   " " +
                                   clipping +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -551,7 +630,7 @@ class Ger extends React.Component {
                                   clipping,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -581,7 +660,7 @@ class Ger extends React.Component {
                                   " " +
                                   twisting +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -589,7 +668,7 @@ class Ger extends React.Component {
                                   twisting,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -619,7 +698,7 @@ class Ger extends React.Component {
                                   " " +
                                   pruning +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -627,7 +706,7 @@ class Ger extends React.Component {
                                   pruning,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -657,7 +736,7 @@ class Ger extends React.Component {
                                   " " +
                                   dropping +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -665,7 +744,7 @@ class Ger extends React.Component {
                                   dropping,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -695,7 +774,7 @@ class Ger extends React.Component {
                                   " " +
                                   deleafing +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -703,7 +782,7 @@ class Ger extends React.Component {
                                   deleafing,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -733,7 +812,7 @@ class Ger extends React.Component {
                                   " " +
                                   picking +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -741,7 +820,7 @@ class Ger extends React.Component {
                                   picking,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -771,7 +850,7 @@ class Ger extends React.Component {
                                   " " +
                                   pruneArch +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -779,7 +858,7 @@ class Ger extends React.Component {
                                   pruneArch,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -809,7 +888,7 @@ class Ger extends React.Component {
                                   " " +
                                   trussCutting +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -817,7 +896,7 @@ class Ger extends React.Component {
                                   trussCutting,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -847,7 +926,7 @@ class Ger extends React.Component {
                                   " " +
                                   density +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -855,7 +934,7 @@ class Ger extends React.Component {
                                   density,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -872,7 +951,7 @@ class Ger extends React.Component {
                             onClick={() =>
                               this.handleDeleteClick(
                                 el.Name + " " + this.state.otherTLName,
-                                el.Name
+                                el.Name,
                               )
                             }
                             value={el.Name + " " + this.state.otherTLName}
@@ -890,7 +969,62 @@ class Ger extends React.Component {
                 </Table>
               </div>
             </form>
-          ) : null}
+          ) : (
+            this.state.otherTLName && (
+              <div className="align-center">
+                <h3 style={{ color: "#d32f2f", marginTop: "20px" }}>
+                  No data found for {this.state.otherTLName}
+                </h3>
+                <p>Would you like to copy data from another Team Leader?</p>
+                <p
+                  style={{
+                    backgroundColor: "#fff3cd",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    color: "#856404",
+                    fontSize: "14px",
+                  }}
+                >
+                  <strong>Note:</strong> Copy may take up to 5 minutes. Refresh
+                  the page to check if copied.
+                </p>
+
+                <label style={{ marginRight: "10px" }}>
+                  Copy from:
+                  <select
+                    className="text-input"
+                    name="copyFromTL"
+                    onChange={this.handleCopyFromTLChange}
+                    value={this.state.copyFromTL || "none"}
+                    style={{
+                      marginLeft: "10px",
+                      width: "250px",
+                      minWidth: "250px",
+                    }}
+                  >
+                    <option value="none">SELECT</option>
+                    {Array.isArray(this.state.leaders) &&
+                      this.state.leaders.map((leader, index) => (
+                        <option key={index} value={leader}>
+                          {leader}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+
+                <br />
+                <br />
+
+                <button
+                  className="button-submit"
+                  onClick={this.handleCopyData}
+                  type="button"
+                >
+                  Copy Data
+                </button>
+              </div>
+            )
+          )}
           <br />
           <br />
         </div>
