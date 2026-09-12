@@ -42,6 +42,8 @@ class Rep extends React.Component {
       loading: false,
       value: "",
       filteredData: [],
+      deleteInProgress: false,
+      submitInProgress: false,
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -73,7 +75,7 @@ class Rep extends React.Component {
             this.state.combinedData.items.filter(jobAndTeamLeader);
 
           const sortedData = filteredData.sort((a, b) =>
-            a.Name.localeCompare(b.Name)
+            a.Name.localeCompare(b.Name),
           );
 
           this.setState({ TL1: sortedData });
@@ -108,7 +110,7 @@ class Rep extends React.Component {
 
           () => {
             this.afterSetStateFinished(data2);
-          }
+          },
         );
       })
       .catch((error) => {
@@ -153,7 +155,7 @@ class Rep extends React.Component {
       valueJob,
       valueTL,
       combinedJobValue,
-      deletingLookup
+      deletingLookup,
     );
   }
 
@@ -172,25 +174,43 @@ class Rep extends React.Component {
             </button>
             <button
               className="btn-yes"
+              disabled={this.state.deleteInProgress}
               onClick={() => {
+                // close modal immediately and show page loader
+                this.setState({ deleteInProgress: true, loading: true });
+                onClose();
+
                 const scriptUrl =
                   "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
-                const url = `${scriptUrl}?
-                              callback=ctrlq&action=${"doDeleteRepNames"}&delete_names=${deleteNames}`;
+                const url = `${scriptUrl}?callback=ctrlq&action=${"doDeleteRepNames"}&delete_names=${deleteNames}`;
 
                 console.log("URL : " + url);
-                fetch(url, { mode: "no-cors" }).then(() => {
-                  console.log(deleteNames + " Deleted");
+                fetch(url, { mode: "no-cors" })
+                  .then(() => {
+                    console.log(deleteNames + " Deleted");
 
-                  this.getDataFromGoogleSheet();
+                    this.getDataFromGoogleSheet();
 
-                  toast.success("Deleted!!");
+                    toast.success("Deleted!!");
 
-                  onClose();
-                });
+                    // reset flags
+                    this.setState({ deleteInProgress: false, loading: false });
+                  })
+                  .catch((err) => {
+                    console.log("Delete error:", err);
+                    toast.error("Error deleting. Please try again.");
+                    this.setState({ deleteInProgress: false, loading: false });
+                  });
               }}
             >
-              Yes, Delete it !
+              {this.state.deleteInProgress ? (
+                <>
+                  <ThreeDots height="16" width="40" color="#ffffff" />
+                  <span style={{ marginLeft: 8 }}>Deleting...</span>
+                </>
+              ) : (
+                "Yes, Delete it !"
+              )}
             </button>
           </div>
         );
@@ -338,18 +358,32 @@ class Rep extends React.Component {
           that.state.teamLeaderName
         }&combined_name=${that.state.combinedTLWorkers}`;
 
-        console.log("URL : " + url);
-        fetch(url, { mode: "no-cors" }).then(() => {
-          toast.success("Data Send");
-          this.setState({
-            workerName: "",
-            adiNumber: "",
-            teamLeaderName: "",
-            combinedTLWorkers: "",
-          });
+        // prevent duplicate submits and show submitting state
+        this.setState({ submitInProgress: true });
 
-          document.getElementById("name_select").selectedIndex = 0; //1 = option 2
-        });
+        console.log("URL : " + url);
+        fetch(url, { mode: "no-cors" })
+          .then(() => {
+            toast.success("Data Send");
+            this.setState({
+              workerName: "",
+              adiNumber: "",
+              teamLeaderName: "",
+              combinedTLWorkers: "",
+              submitInProgress: false,
+            });
+
+            try {
+              document.getElementById("name_select").selectedIndex = 0; //1 = option 2
+            } catch (e) {
+              /* ignore */
+            }
+          })
+          .catch((err) => {
+            console.log("Error sending data:", err);
+            toast.error("Error sending data. Please try again.");
+            this.setState({ submitInProgress: false });
+          });
       } else {
         toast.error("Please select team leader from the list.");
       }
@@ -421,7 +455,14 @@ class Rep extends React.Component {
             <br />
             <br />
 
-            <input className="button-submit" type="submit" />
+            <button
+              className="button-submit"
+              type="submit"
+              disabled={this.state.submitInProgress}
+              style={{ opacity: this.state.submitInProgress ? 0.5 : 1 }}
+            >
+              {this.state.submitInProgress ? "Submitting..." : "Submit"}
+            </button>
           </form>
 
           <br />
@@ -533,7 +574,7 @@ class Rep extends React.Component {
                                   " " +
                                   clipping +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -541,7 +582,7 @@ class Rep extends React.Component {
                                   clipping,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -571,7 +612,7 @@ class Rep extends React.Component {
                                   " " +
                                   twisting +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -579,7 +620,7 @@ class Rep extends React.Component {
                                   twisting,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -609,7 +650,7 @@ class Rep extends React.Component {
                                   " " +
                                   pruning +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -617,7 +658,7 @@ class Rep extends React.Component {
                                   pruning,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -647,7 +688,7 @@ class Rep extends React.Component {
                                   " " +
                                   dropping +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -655,7 +696,7 @@ class Rep extends React.Component {
                                   dropping,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -685,7 +726,7 @@ class Rep extends React.Component {
                                   " " +
                                   deleafing +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -693,7 +734,7 @@ class Rep extends React.Component {
                                   deleafing,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -723,7 +764,7 @@ class Rep extends React.Component {
                                   " " +
                                   picking +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -731,7 +772,7 @@ class Rep extends React.Component {
                                   picking,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -761,7 +802,7 @@ class Rep extends React.Component {
                                   " " +
                                   arching +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -769,7 +810,7 @@ class Rep extends React.Component {
                                   arching,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -799,7 +840,7 @@ class Rep extends React.Component {
                                   " " +
                                   pruneArch +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -807,7 +848,7 @@ class Rep extends React.Component {
                                   pruneArch,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -837,7 +878,7 @@ class Rep extends React.Component {
                                   " " +
                                   trussPicking +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -845,7 +886,7 @@ class Rep extends React.Component {
                                   trussPicking,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -875,7 +916,7 @@ class Rep extends React.Component {
                                   " " +
                                   clipPrune +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -883,7 +924,7 @@ class Rep extends React.Component {
                                   clipPrune,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -913,7 +954,7 @@ class Rep extends React.Component {
                                   " " +
                                   density +
                                   " " +
-                                  this.state.otherTLName
+                                  this.state.otherTLName,
                               )}
                               onChange={(e) =>
                                 this.getJobDetails(
@@ -921,7 +962,7 @@ class Rep extends React.Component {
                                   density,
                                   this.state.otherTLName,
                                   e,
-                                  el.Name + " " + this.state.otherTLName
+                                  el.Name + " " + this.state.otherTLName,
                                 )
                               }
                               value={
@@ -938,7 +979,7 @@ class Rep extends React.Component {
                             onClick={() =>
                               this.handleDeleteClick(
                                 el.Name + " " + this.state.otherTLName,
-                                el.Name
+                                el.Name,
                               )
                             }
                             value={el.Name + " " + this.state.otherTLName}

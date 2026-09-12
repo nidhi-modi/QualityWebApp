@@ -44,6 +44,8 @@ class Oha extends React.Component {
       leaders: [],
       copyFromTL: "",
       showCopyUI: false,
+      deleteInProgress: false,
+      submitInProgress: false,
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -244,25 +246,43 @@ class Oha extends React.Component {
             </button>
             <button
               className="btn-yes"
+              disabled={this.state.deleteInProgress}
               onClick={() => {
+                // close modal immediately and show page loader
+                this.setState({ deleteInProgress: true, loading: true });
+                onClose();
+
                 const scriptUrl =
                   "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
-                const url = `${scriptUrl}?
-                                  callback=ctrlq&action=${"doDeleteOhaNames"}&delete_names=${deleteNames}`;
+                const url = `${scriptUrl}?callback=ctrlq&action=${"doDeleteOhaNames"}&delete_names=${deleteNames}`;
 
                 console.log("URL : " + url);
-                fetch(url, { mode: "no-cors" }).then(() => {
-                  this.getDataFromGoogleSheet();
+                fetch(url, { mode: "no-cors" })
+                  .then(() => {
+                    this.getDataFromGoogleSheet();
 
-                  console.log(deleteNames + " Deleted");
+                    console.log(deleteNames + " Deleted");
 
-                  toast.success("Deleted!!");
+                    toast.success("Deleted!!");
 
-                  onClose();
-                });
+                    // reset flags
+                    this.setState({ deleteInProgress: false, loading: false });
+                  })
+                  .catch((err) => {
+                    console.log("Delete error:", err);
+                    toast.error("Error deleting. Please try again.");
+                    this.setState({ deleteInProgress: false, loading: false });
+                  });
               }}
             >
-              Yes, Delete it !
+              {this.state.deleteInProgress ? (
+                <>
+                  <ThreeDots height="16" width="40" color="#ffffff" />
+                  <span style={{ marginLeft: 8 }}>Deleting...</span>
+                </>
+              ) : (
+                "Yes, Delete it !"
+              )}
             </button>
           </div>
         );
@@ -412,7 +432,10 @@ class Oha extends React.Component {
       return;
     }
 
-    this.sendDataToGoogleSheet();
+    // show immediate submit feedback
+    this.setState({ submitInProgress: true }, () => {
+      this.sendDataToGoogleSheet();
+    });
   }
 
   titleCase(str) {
@@ -454,23 +477,39 @@ class Oha extends React.Component {
           that.state.teamLeaderName
         }&combined_name=${that.state.combinedTLWorkers}`;
 
-        console.log("URL : " + url);
-        fetch(url, { mode: "no-cors" }).then(() => {
-          toast.success("Data Send");
-          this.setState({
-            workerName: "",
-            adiNumber: "",
-            teamLeaderName: "",
-            combinedTLWorkers: "",
-          });
+        // prevent duplicate submits and show submitting state
+        this.setState({ submitInProgress: true });
 
-          document.getElementById("name_select").selectedIndex = 0; //1 = option 2
-        });
+        console.log("URL : " + url);
+        fetch(url, { mode: "no-cors" })
+          .then(() => {
+            toast.success("Data Send");
+            this.setState({
+              workerName: "",
+              adiNumber: "",
+              teamLeaderName: "",
+              combinedTLWorkers: "",
+              submitInProgress: false,
+            });
+
+            try {
+              document.getElementById("name_select").selectedIndex = 0; //1 = option 2
+            } catch (e) {
+              /* ignore */
+            }
+          })
+          .catch((err) => {
+            console.log("Error sending data:", err);
+            toast.error("Error sending data. Please try again.");
+            this.setState({ submitInProgress: false });
+          });
       } else {
         toast.error("Please select team leader from the list.");
+        this.setState({ submitInProgress: false });
       }
     } else {
       toast.error("Please enter ADI number.");
+      this.setState({ submitInProgress: false });
     }
   };
 
@@ -544,7 +583,14 @@ class Oha extends React.Component {
             <br />
             <br />
 
-            <input className="button-submit" type="submit" />
+            <button
+              className="button-submit"
+              type="submit"
+              disabled={this.state.submitInProgress}
+              style={{ opacity: this.state.submitInProgress ? 0.5 : 1 }}
+            >
+              {this.state.submitInProgress ? "Submitting..." : "Submit"}
+            </button>
           </form>
 
           <br />

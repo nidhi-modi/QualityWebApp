@@ -43,6 +43,8 @@ class Ger extends React.Component {
       leaders: [],
       copyFromTL: "",
       showCopyUI: false,
+      deleteInProgress: false,
+      submitInProgress: false,
     };
 
     this.handleWorkersNameChange = this.handleWorkersNameChange.bind(this);
@@ -208,25 +210,44 @@ class Ger extends React.Component {
             </button>
             <button
               className="btn-yes"
+              disabled={this.state.deleteInProgress}
               onClick={() => {
+                // close modal immediately and show page loader
+                this.setState({ deleteInProgress: true, loading: true });
+                onClose();
+
                 const scriptUrl =
                   "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
-                const url = `${scriptUrl}?
-                      callback=ctrlq&action=${"doDeleteNames"}&delete_names=${deleteNames}`;
+                const url = `${scriptUrl}?callback=ctrlq&action=${"doDeleteNames"}&delete_names=${deleteNames}`;
 
                 console.log("URL : " + url);
-                fetch(url, { mode: "no-cors" }).then(() => {
-                  console.log(deleteNames + " Deleted");
+                fetch(url, { mode: "no-cors" })
+                  .then(() => {
+                    console.log(deleteNames + " Deleted");
 
-                  this.getDataFromGoogleSheet();
+                    toast.success("Deleted!!");
 
-                  toast.success("Deleted!!");
+                    // refresh data
+                    this.getDataFromGoogleSheet();
 
-                  onClose();
-                });
+                    // reset flags
+                    this.setState({ deleteInProgress: false, loading: false });
+                  })
+                  .catch((err) => {
+                    console.log("Delete error:", err);
+                    toast.error("Error deleting. Please try again.");
+                    this.setState({ deleteInProgress: false, loading: false });
+                  });
               }}
             >
-              Yes, Delete it !
+              {this.state.deleteInProgress ? (
+                <>
+                  <ThreeDots height="16" width="40" color="#ffffff" />
+                  <span style={{ marginLeft: 8 }}>Deleting...</span>
+                </>
+              ) : (
+                "Yes, Delete it !"
+              )}
             </button>
           </div>
         );
@@ -363,21 +384,27 @@ class Ger extends React.Component {
   handleSubmit(event) {
     event.preventDefault();
 
-    if (this.state.leaders.length === 0) {
-      toast.error("Please wait for leaders to load.");
-      return;
-    }
+    // Trim leading/trailing spaces from the worker name before submitting
+    const trimmedName = (this.state.workerName || "").trim();
+    const normalized = this.titleCase(trimmedName);
 
-    if (
-      this.state.teamLeaderName === "" ||
-      this.state.teamLeaderName === "SELECT" ||
-      this.state.teamLeaderName === null
-    ) {
-      toast.error("Please select team leader from the list.");
-      return;
-    }
+    this.setState({ workerName: normalized }, () => {
+      if (this.state.leaders.length === 0) {
+        toast.error("Please wait for leaders to load.");
+        return;
+      }
 
-    this.sendDataToGoogleSheet();
+      if (
+        this.state.teamLeaderName === "" ||
+        this.state.teamLeaderName === "SELECT" ||
+        this.state.teamLeaderName === null
+      ) {
+        toast.error("Please select team leader from the list.");
+        return;
+      }
+
+      this.sendDataToGoogleSheet();
+    });
   }
 
   titleCase(str) {
@@ -408,35 +435,60 @@ class Ger extends React.Component {
     const { workerName } = that.state;
     const { adiNumber } = that.state;
 
-    if (workerName) {
-      if (adiNumber) {
-        const scriptUrl =
-          "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
-        const url = `${scriptUrl}?
-        callback=ctrlq&action=${"doPostData"}&workers_name=${
-          that.state.workerName
-        }&adi_number=${that.state.adiNumber}&teamleader_name=${
-          that.state.teamLeaderName
-        }&combined_name=${that.state.combinedTLWorkers}`;
-
-        console.log("URL : " + url);
-        fetch(url, { mode: "no-cors" }).then(() => {
-          toast.success("Data Send");
-          this.setState({
-            workerName: "",
-            adiNumber: "",
-            teamLeaderName: "",
-            combinedTLWorkers: "",
-          });
-
-          document.getElementById("name_select").selectedIndex = 0; //1 = option 2
-        });
-      } else {
-        toast.error("Please select team leader from the list.");
-      }
-    } else {
-      toast.error("Please enter ADI number.");
+    // Validate fields with clear messages
+    const trimmedWorker = (workerName || "").trim();
+    if (!trimmedWorker) {
+      toast.error("Please enter worker name.");
+      return;
     }
+
+    if (!adiNumber) {
+      toast.error("Please enter ADI number.");
+      return;
+    }
+
+    if (!that.state.teamLeaderName || that.state.teamLeaderName === "none") {
+      toast.error("Please select team leader from the list.");
+      return;
+    }
+
+    // Build combined name here using trimmed worker name to avoid extra spaces
+    const combinedName = `${trimmedWorker} ${that.state.teamLeaderName}`.trim();
+
+    const scriptUrl =
+      "https://script.google.com/macros/s/AKfycbymOKlhOo1RztVgk_J35pzX3WOMID2Zw0UuPe6pYGxB9OvjCiXf/exec";
+    const url = `${scriptUrl}?callback=ctrlq&action=${"doPostData"}&workers_name=${encodeURIComponent(
+      trimmedWorker,
+    )}&adi_number=${encodeURIComponent(that.state.adiNumber)}&teamleader_name=${encodeURIComponent(
+      that.state.teamLeaderName,
+    )}&combined_name=${encodeURIComponent(combinedName)}`;
+
+    console.log("URL : " + url);
+    // show submit loader and prevent duplicate submits
+    this.setState({ submitInProgress: true });
+
+    fetch(url, { mode: "no-cors" })
+      .then(() => {
+        toast.success("Data Send");
+        this.setState({
+          workerName: "",
+          adiNumber: "",
+          teamLeaderName: "",
+          combinedTLWorkers: "",
+          submitInProgress: false,
+        });
+
+        try {
+          document.getElementById("name_select").selectedIndex = 0; //1 = option 2
+        } catch (e) {
+          /* ignore */
+        }
+      })
+      .catch((err) => {
+        console.log("Error sending data:", err);
+        toast.error("Error sending data. Please try again.");
+        this.setState({ submitInProgress: false });
+      });
   };
 
   render() {
@@ -509,7 +561,14 @@ class Ger extends React.Component {
             <br />
             <br />
 
-            <input className="button-submit" type="submit" />
+            <button
+              className="button-submit"
+              type="submit"
+              disabled={this.state.submitInProgress}
+              style={{ opacity: this.state.submitInProgress ? 0.5 : 1 }}
+            >
+              {this.state.submitInProgress ? "Submitting..." : "Submit"}
+            </button>
           </form>
 
           <br />
